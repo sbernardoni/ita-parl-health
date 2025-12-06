@@ -1,20 +1,13 @@
-# If needed:
-# !pip install -U sentence-transformers
-
-import os, unicodedata, numpy as np, pandas as pd
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-
 #finding health topics
 
 
-# ---------- pick assignments / base df ----------
+#pick assignments / base df
 if "results" in locals() and "bertopic_topic" in results.columns:
     assign_df = results.copy()
     assign_vec = assign_df["bertopic_topic"].to_numpy()
 else:
     assign_df = df.copy()
-    assign_df["bertopic_topic"] = topics  # assumes `topics` exists
+    assign_df["bertopic_topic"] = topics 
     assign_vec = assign_df["bertopic_topic"].to_numpy()
 
 topics_info = topic_model.get_topic_info()
@@ -23,7 +16,7 @@ topic_ids = [t for t in topics_info["Topic"].tolist() if t != -1]
 def strip_accents(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
 
-# ========= A) KEYWORD method (prefix stems) =========
+# dictionary method
 HEALTH_KEYWORDS = {
     "salute","sanita","ospedal","medic", "infermier",
     "vaccin","pandem","epidemi","malattia","pazient","terapia","farmac",
@@ -43,7 +36,7 @@ def topic_has_health_words(tid, top_k=20):
 
 health_by_kw = [tid for tid in topic_ids if topic_has_health_words(tid, top_k=20)]
 
-# ========= B) SEMANTIC method with UMBERTO (CPU ok) =========
+#semantic method with UMBERTO
 st_model = SentenceTransformer("musixmatch/umberto-commoncrawl-cased-v1")
 
 query_text = "sanità salute ospedale medico paziente medicina vaccino epidemia prevenzione diagnosi terapia servizio sanitario nazionale pandemia malattia farmaco ricovero tumore virus"
@@ -52,7 +45,7 @@ q_vec = st_model.encode(query_text, normalize_embeddings=True)
 topic_order, topic_phrases = [], []
 for tid in topic_ids:
     top_words = [w for w,_ in topic_model.get_topic(tid)[:10]]
-    phrase = " ".join(top_words)            # no 'query:'/'passage:' prefixes needed for UmBERTo
+    phrase = " ".join(top_words)          
     topic_order.append(tid)
     topic_phrases.append(phrase)
 
@@ -65,7 +58,7 @@ PCTL = 85
 thr = max(ABS_FLOOR, float(np.percentile(sims, PCTL)))
 health_by_sem = [topic_order[i] for i, s in enumerate(sims) if s >= thr]
 
-# ========= Combine & label =========
+#combining and labelling
 health_topics_union = sorted(set(health_by_kw) | set(health_by_sem))
 health_topics_intersection = sorted(set(health_by_kw) & set(health_by_sem))
 
@@ -85,7 +78,7 @@ for tid in topic_ids:
     })
 topic_labels_df = pd.DataFrame(rows).sort_values("umberto_sim", ascending=False)
 
-# Per-document flags (use UNION by default; switch to intersection for stricter labeling)
+# Per-document flags: union and intersection to check the difference between methods
 assign_df["is_health_by_keywords"] = pd.Series(assign_vec).isin(health_by_kw)
 assign_df["is_health_by_semantic_umberto"] = pd.Series(assign_vec).isin(health_by_sem)
 assign_df["is_health_union"] = pd.Series(assign_vec).isin(health_topics_union)
@@ -106,7 +99,7 @@ print(f"Saved per-document flags → {os.path.join(OUT_DIR, 'doc_assignments_wit
 import pandas as pd
 
 # Path to your saved dataset (update if needed)
-csv_path_health = "C:/Users/Sara/Documents/ESS/20886 - Foundations of Social Sciences I/health-discourse-it/Results/doc_assignments_with_health_umberto.csv"
+csv_path_health = "C:/insert path here/doc_assignments_with_health_umberto.csv"
 
 # Load dataset
 df = pd.read_csv(csv_path_health)
@@ -122,6 +115,6 @@ print(f"Total observations before filtering: {len(df)}")
 print(f"Total health-related observations: {len(df_health)}")
 
 # Save filtered dataset
-output_path = "C:/Users/Sara/Documents/ESS/20886 - Foundations of Social Sciences I/health-discourse-it/Results final/subset_health_topics.csv"
+output_path = "C:/insert path here/subset_health_topics.csv"
 df_health.to_csv(output_path, index=False)
 print(f"Filtered dataset saved to {output_path}")

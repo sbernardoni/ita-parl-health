@@ -1,6 +1,6 @@
-EMB_PATH = "C:/Users/Sara/Documents/ESS/20886 - Foundations of Social Sciences I/health-discourse-it/Results final/e5_base_embeddings.npy"
+EMB_PATH = "C:/insert path here/e5_base_embeddings.npy"
 
-CSV_PATH = "C:/Users/Sara/Documents/ESS/20886 - Foundations of Social Sciences I/health-discourse-it/camera_2013_2022_textcleaned_simple.csv"
+CSV_PATH = "C:/insert path here/camera_2013_2022_textcleaned_simple.csv"
 try:
     df = pd.read_csv(CSV_PATH, encoding="utf-8")
 except UnicodeDecodeError:
@@ -18,20 +18,10 @@ print(f"Loaded CSV: {len(df)} rows")
 
 #including centroid-based reassignment to have no outliers
 
-import os
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import normalize
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import umap, hdbscan
-from bertopic import BERTopic
-
-# ----------------------------
 # Config
-# ----------------------------
+
 TEXT_COL = "text_clean"
-STOP_LANG = "italian"   # or "english"
+STOP_LANG = "italian"
 NGRAM_RANGE = (1, 2)
 MIN_DF, MAX_DF = 5, 0.95
 
@@ -40,12 +30,12 @@ UMAP_N_COMPONENTS = 5
 HDBSCAN_MIN_CLUSTER_SIZE = 20
 HDBSCAN_MIN_SAMPLES = None
 
-OUT_DIR = "C:/Users/Sara/Documents/ESS/20886 - Foundations of Social Sciences I/health-discourse-it/Results"
+OUT_DIR = "C:/insert path here"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ----------------------------
+
 # Load data and embeddings
-# ----------------------------
+
 df = pd.read_csv(CSV_PATH)
 if TEXT_COL not in df.columns:
     raise ValueError(f"Column '{TEXT_COL}' not found. Found: {list(df.columns)}")
@@ -57,11 +47,10 @@ if emb.shape[0] != len(texts):
 
 emb = normalize(emb)
 
-# ----------------------------
 # BERTopic setup
-# ----------------------------
+
 vectorizer = CountVectorizer(
-    stop_words=italian_stopwords,   # list instead of "italian"
+    stop_words=italian_stopwords, 
     ngram_range=NGRAM_RANGE,
     min_df=MIN_DF,
     max_df=MAX_DF
@@ -92,14 +81,14 @@ topic_model = BERTopic(
     verbose=True
 )
 
-# ----------------------------
+
 # Fit BERTopic using embeddings
-# ----------------------------
+
 topics, probs = topic_model.fit_transform(texts, embeddings=emb)
 
-# ----------------------------
+
 # Topic reassignment (reduce_outliers + centroid fallback)
-# ----------------------------
+
 print(f"Initial outlier rate: {(np.array(topics) == -1).mean():.1%}")
 
 # 1) BERTopic's internal reassignment
@@ -108,7 +97,7 @@ try:
         texts,
         topics,
         strategy="c-tf-idf",
-        threshold=0.4    # lower = more aggressive reassignment
+        threshold=0.4   
     )
     topic_model.update_topics(texts)
     print(f"After reduce_outliers: {(np.array(topics) == -1).mean():.1%}")
@@ -133,9 +122,9 @@ if mask_out.any():
 else:
     print("No outliers left after reduce_outliers.")
 
-# ----------------------------
+
 # Save outputs
-# ----------------------------
+
 topics_info = topic_model.get_topic_info()
 topics_info.to_csv(os.path.join(OUT_DIR, "topics_overview_reassign.csv"), index=False)
 
@@ -148,9 +137,8 @@ results.to_csv(os.path.join(OUT_DIR, "doc_assignments_reassign.csv"), index=Fals
 print(f"Saved topic overview → {OUT_DIR}/topics_overview_reassign.csv")
 print(f"Saved document assignments → {OUT_DIR}/doc_assignments_reassign.csv")
 
-# ----------------------------
+
 # Visualizations
-# ----------------------------
 try:
     topic_model.visualize_topics().write_html(os.path.join(OUT_DIR, "viz_topics.html"))
     topic_model.visualize_hierarchy().write_html(os.path.join(OUT_DIR, "viz_hierarchy.html"))

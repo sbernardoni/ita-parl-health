@@ -1,18 +1,11 @@
-import os, gc, time, numpy as np, pandas as pd, torch
-from torch.utils.data import DataLoader, Dataset
-from transformers import AutoTokenizer, AutoModel
-from functools import partial
-from tqdm import tqdm
-
 MODEL_NAME = "intfloat/multilingual-e5-base"
 TEXT_COL   = "text_clean"
 BATCH_SIZE = 8
 NUM_WORKERS = 4
 MAX_LEN = 512
 
-from google.colab import files
-uploaded = files.upload()
-CSV_PATH = list(uploaded.keys())[0]
+CSV_PATH = "C:/insert path here/camera_2013_2022_textcleaned_simple.csv"
+
 try:
     df = pd.read_csv(CSV_PATH, encoding="utf-8")
 except UnicodeDecodeError:
@@ -64,7 +57,7 @@ def collate_tokenize(batch, tokenizer, max_length, overlap_stride=128):
         flat_ids.append(torch.tensor(ids, dtype=torch.long))
         flat_am.append(torch.tensor(am,  dtype=torch.long))
         flat_doc_ids.append(doc_ids[src_idx])
-        flat_tok_lens.append(int(sum(am)))         # real tokens in this chunk
+        flat_tok_lens.append(int(sum(am)))
 
     # pad to a batch tensor
     if not flat_ids:
@@ -85,7 +78,7 @@ def collate_tokenize(batch, tokenizer, max_length, overlap_stride=128):
     attention = torch.stack([pad(x, 0) for x in flat_am])
     doc_ids_t = torch.tensor(flat_doc_ids, dtype=torch.long)
     tok_lens  = torch.tensor(flat_tok_lens, dtype=torch.long)
-    chunk_pos = torch.tensor(flat_pos_in_doc, dtype=torch.long)  # 0,1,2,...
+    chunk_pos = torch.tensor(flat_pos_in_doc, dtype=torch.long)
 
     return {"input_ids": input_ids, "attention_mask": attention,
             "doc_ids": doc_ids_t, "tok_len": tok_lens, "chunk_pos": chunk_pos}
@@ -104,7 +97,7 @@ def hierarchical_e5_embeddings(texts, batch_size=BATCH_SIZE, max_length=MAX_LEN,
         ds,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=4,                        # Colab/Linux: safe to use workers
+        num_workers=4,
         pin_memory=(device=="cuda"),
         persistent_workers=False,
         prefetch_factor=4,
