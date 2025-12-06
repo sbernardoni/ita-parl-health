@@ -169,7 +169,7 @@ counts_health_lda = (
 
 # Try UTF-8 first, otherwise latin-1
 
-DATA_DIR = "C:/insert path here/numeric analysis"
+DATA_DIR = "C:/insert path here/health speech identification"
 try:
     df_health.to_csv(os.path.join(DATA_DIR, "final_health_subset_bert.csv"),
                      index=False, encoding="utf-8")

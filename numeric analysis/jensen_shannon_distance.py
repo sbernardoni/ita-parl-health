@@ -12,7 +12,7 @@ from scipy.spatial.distance import jensenshannon
 # Load both datasets, results and robustness 
 
 #set correct path for repo, e.g. where you saved the ita-parl-health folder
-BASE_PATH= "C:/insert repo path here/numerical analysis"
+BASE_PATH= "C:/insert repo path here/health speech identification"
 # Load both datasets once
 
 data_path_main = BASE_PATH.join('final_health_subset_bert.csv')

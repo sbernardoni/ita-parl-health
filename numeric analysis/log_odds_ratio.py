@@ -14,7 +14,7 @@ import re
 # Load both datasets, results and robustness 
 
 #set correct path for repo, e.g. where you saved the ita-parl-health folder
-BASE_PATH= "C:/insert repo path here/numerical analysis"
+BASE_PATH= "C:/insert repo path here/health speech identification"
 
 # Load both datasets once
 
