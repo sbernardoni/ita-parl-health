@@ -62,7 +62,7 @@ df_health_lda = df_health_lda.drop(columns=cols_to_drop_lda)
 # %%
 #Add the text_repro column  to bert subset
 
-import spacy
+
 
 nlp = spacy.load("it_core_news_sm", disable=["ner", "parser"])
 

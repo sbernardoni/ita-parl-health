@@ -323,7 +323,7 @@ df_clean["if_health"] = df_clean.index.isin(df_health.index)
 
 
 # %%
-import pandas as pd
+
 
 # Combine Center and M5S into one bloc
 df_clean["bloc_combined"] = df_clean["side3"].replace({"Center": "Center+M5S", "M5S": "Center+M5S"})
@@ -350,7 +350,7 @@ print(table.head(10))
 # %%
 #Plot the Results
 
-import matplotlib.pyplot as plt
+
 
 # Define the figure with a descriptive name
 fig_health_share_bloc_quarter, ax = plt.subplots(figsize=(10,6))
@@ -406,7 +406,7 @@ plt.show()
 
 
 # %%
-import matplotlib.pyplot as plt
+
 
 # Count total speeches per quarter per bloc
 speeches_per_quarter_bloc = (
